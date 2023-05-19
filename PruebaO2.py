@@ -1,4 +1,3 @@
-
 import re
 
 variable_pattern = r'^[a-zA-Z][a-zA-Z0-9_]*$'
@@ -19,18 +18,14 @@ def is_decimal(string):
 def is_valid_expression(string):
     tokens = re.findall(r'[a-zA-Z][a-zA-Z0-9_]*|\d+(\.\d+)?|[-+*/()]', string)
 
-    for token in tokens:
-        if not (is_variable(token) or is_integer(token) or is_decimal(token) or token in ['+', '-', '*', '/', '(', ')']):
-            return False
+    if len(tokens) == 0:
+        return False
 
-    if any(token in ['+', '-', '*', '/'] for token in tokens[:1]):
-        return False
-    if any(token in ['+', '-', '*', '/'] for token in tokens[-1:]):
-        return False
-    if any(tokens[i] in ['+', '-', '*', '/'] and tokens[i + 1] in ['+', '-', '*', '/'] for i in range(len(tokens) - 1)):
+    if any(token in ['+', '-', '*', '/'] for token in [tokens[0], tokens[-1]]):
         return False
 
     stack = []
+    prev_token = None
     for token in tokens:
         if token == '(':
             stack.append(token)
@@ -38,6 +33,13 @@ def is_valid_expression(string):
             if not stack:
                 return False
             stack.pop()
+        elif prev_token is not None and prev_token in ['+', '-', '*', '/']:
+            if token in ['+', '-', '*', '/']:
+                return False
+            elif token == '(':
+                return False
+        prev_token = token
+
     if stack:
         return False
 
